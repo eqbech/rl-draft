@@ -8,7 +8,7 @@ pub struct Trainer {
 impl Trainer {
     pub fn new() -> Self {
         Trainer {
-            agent: Agent::load("q_table.csv").expect("Failed to load Agent with Q-table"),
+            agent: Agent::new(),
             environment: Environment::new(),
         }
     }
