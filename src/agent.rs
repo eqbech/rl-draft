@@ -3,15 +3,23 @@ use rand::Rng;
 
 use crate::environment::Action;
 
-/// The Agent struct represents the agent in the environment.
-/// It contains methods for the agent to act and learn from the environment.
+/// The Agent struct represents the agent that is going to interact and learn from the environment.
+/// It contains methods for learning and acting with the environment and useful utils such as loading and saving Q-tables.
 pub struct Agent {
+    /// Q-table is a 3D array where containing the Q-values for each state-action pair.
     pub q_table: [[[f32; 4]; 5]; 5],
+    /// Epsilon-greedy parameters for exploration vs exploitation ε where (0 ≤ ε ≤ 1)
+    /// A higher epsilon means more exploration, while a lower epsilon means more exploitation.
     epsilon: f32,
+    /// Learning rate α where (0 < α ≤ 1)
+    /// A higher alpha means the agent learns more quickly from new information.
     alpha: f32,
+    /// Discount factor 𝛾 for future rewards where (0 ≤ γ < 1)
+    /// A higher gamma means the agent values future rewards more.
     gamma: f32,
 }
 impl Agent {
+    /// Creates a new Agent with an initialized Q-table and parameters for learning.
     pub fn new() -> Self {
         Agent { 
             // Q-table initialized with zeros
@@ -22,8 +30,15 @@ impl Agent {
         }
     }
 
-    /// The act method takes the current state of the environment and returns an action.
-    /// The actions space consists of integers from 2 - 14, representing the possible card values.
+    /// Returns an action for the given state using an epsilon-greedy strategy.
+    ///
+    /// If a randomly generated number is less than `epsilon`, a random action is chosen
+    /// (exploration). Otherwise, the agent selects the action with the highest Q-value 
+    /// in the current state (exploitation).
+    ///
+    /// # Arguments
+    ///
+    /// * `state` - A tuple representing the current state.
     pub fn act(&mut self, state: (usize, usize)) -> Action {
         let mut rng = rand::rng();
         let action = if rng.random::<f32>() < self.epsilon {
@@ -45,8 +60,24 @@ impl Agent {
         action
     }
 
-    /// The learn method applies the Q‑learning update using the state, action, reward,
-    /// and next_state.
+    /// Applies the **Q‑learning update** to the Q‑table.
+    ///
+    /// Given a state `s`, action `a`, reward `r`, and next state `s'`, the Q‑value update is computed as:
+    ///
+    /// ```math
+    /// Q(s, a) ← Q(s, a) + α · (r + γ · maxₐ' Q(s', a') − Q(s, a))
+    /// ```
+    ///
+    /// where:
+    /// - **α** is the learning rate,
+    /// - **γ** is the discount factor.
+    ///
+    /// **Parameters:**
+    ///
+    /// - `state`: The current state, as a tuple `(usize, usize)`.
+    /// - `action`: The action taken.
+    /// - `reward`: The immediate reward received.
+    /// - `next_state`: The state resulting after taking the action.
     pub fn learn(&mut self, state: (usize, usize), action: Action, reward: f32, next_state: (usize, usize)) {        
         // Find the maximum Q-value for the next state over all actions.
         let mut max_q_next = 0.0;
@@ -56,11 +87,11 @@ impl Agent {
                 max_q_next = q_val;
             }
         }
-        
-        // Q-learning update: Q(s,a) = Q(s,a) + α * (reward + γ * max_a' Q(s′,a') – Q(s,a))
-        self.q_table[state.0][state.1][action as usize] = self.alpha * (reward + self.gamma * max_q_next - self.q_table[state.0][state.1][action as usize]);
+
+        self.q_table[state.0][state.1][action as usize] += self.alpha * (reward + self.gamma * max_q_next - self.q_table[state.0][state.1][action as usize]);
     }
 
+    /// Loads a Q-table from a CSV file.
     pub fn load(path: &str) -> Result<Self, std::io::Error> {
         let file = std::fs::File::open(path)?;
         let reader = BufReader::new(file);
@@ -82,6 +113,7 @@ impl Agent {
         Ok(agent)
     }
     
+    /// Predicts the best action for a given state based on the Q-table.
     pub fn predict(&self, state: (usize, usize)) -> Action {
         let mut best_action = 0;
         let mut best_value = f32::MIN;
@@ -95,6 +127,7 @@ impl Agent {
         Action::from(best_action)
     }
 
+    /// Saves the Q-table to a CSV file.
     pub fn save_q_table_to_file(&self, path: &str) -> Result<(), std::io::Error> {
         let mut file = std::fs::File::create(path)?;
         writeln!(file, "Up, Down, Left, Right")?;
@@ -107,6 +140,8 @@ impl Agent {
         Ok(())
     }
 
+    /// Converts the Q-table to a 2D grid of actions, where each cell contains the action with the highest Q-value.
+    /// This is useful for visualizing the agent's Q-table in a more human-readable format.
     pub fn q_table_to_2_dim_grid(&self) -> [[Action; 5]; 5] {
         let mut grid = [[Action::Down; 5]; 5];
         for i in 0..5 {

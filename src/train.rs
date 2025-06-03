@@ -1,18 +1,21 @@
 use crate::{agent::Agent, environment::Environment};
 
+/// The Trainer struct is responsible for managing the training process of the agent in the environment.
 pub struct Trainer {
     pub agent: Agent,
     pub environment: Environment,
 }
 
 impl Trainer {
+    /// Creates a new Trainer with an initialized Agent and Environment.
     pub fn new() -> Self {
         Trainer {
             agent: Agent::new(),
             environment: Environment::new(),
         }
     }
-
+    /// Trains the agent by running a specified number of episodes in the environment.
+    /// Each episode consists of the agent taking actions in the environment until a terminal state is reached. e.g. the agent either won or lost.
     pub fn train(&mut self, episodes: i32) {
         for episode in 1..=episodes {
             self.environment.reset();
