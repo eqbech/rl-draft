@@ -4,19 +4,36 @@ This repository is a simple demonstration of reinforcement learning using Q‑le
 
 ## Overview
 
-The repository contains a basic implementation of a Q‑learning agent that learns to make decisions based on the state of an environment. Key components include:
+- **Environment**  
+  The environment is modeled as a **5×5 grid**.  
+  - **Agent Positioning:** The agent’s state is its current position on the grid, represented as a tuple `(row, column)`.  
+  - **Movement Rules:**  
+    - The agent can move one step at a time in one of four directions: Up, Down, Left, or Right.  
+    - The goal is to **reach the center of the grid**.  
+    - If the agent moves out of bounds, the episode fails.
 
-- **Agent** – Implements the Q‑learning algorithm with an epsilon‑greedy strategy for action selection. The agent updates its Q‑table using the standard update rule:
-  
-  ```
-  Q(s, a) ← Q(s, a) + α · (r + γ · maxₐ' Q(s', a') − Q(s, a))
-  ```
+- **Agent**  
+  The agent is built using a Q‑learning algorithm with an epsilon‑greedy action selection strategy.  
+  - **Q‑Learning Update Rule:**  
+    The update rule is given by:
 
-- **Environment** – Simulates the environment in which the agent operates. It provides the current state, processes actions, and returns rewards.
+    ```
+    Q(s, a) ← Q(s, a) + α · (r + γ · maxₐ' Q(s', a') − Q(s, a))
+    ```
 
-- **Trainer** – Manages the training loop by running episodes where the agent interacts with the environment, learns from rewards, and updates its Q‑table.
+    - **α (alpha):** Learning rate.  
+    - **γ (gamma):** Discount factor for future rewards.
+  - The agent learns to choose actions based on its Q‑table, which estimates the expected reward for each (state, action) pair.
 
-- **Server** – Exposes a RESTful endpoint (using Actix‑web) to retrieve the agent’s decision given a state. This can be used to demonstrate a live model prediction.
+- **Trainer**  
+  The Trainer module runs the training loop where:
+  - The environment is reset at the beginning of each episode.
+  - The agent interacts with the environment step-by-step.
+  - The agent receives rewards and updates its Q‑table via the Q‑learning update rule until it either reaches the center or goes out of bounds.
+
+- **Server**  
+  The server uses Actix‑web to expose a REST API endpoint that provides access to the agent’s learned Q‑table (or can be extended to serve predictions). This is useful for demonstration and observation of how the agent makes decisions.
+
 
 ## Project Structure
 
