@@ -1,6 +1,6 @@
 # Reinforcement Learning Simple Example
 
-This repository is a simple demonstration of reinforcement learning using Q‑learning. It was built as a learning example and a proof-of-concept for our team to understand the basics of RL, training agents, and serving decisions via a REST API.
+This repository is a simple demonstration of reinforcement learning using Q‑learning.
 
 ## Overview
 
@@ -72,7 +72,7 @@ After training, the Q‑table is saved to a CSV file (e.g., `data/q_table.csv`) 
 
 ### Running the Server
 
-After training (or if you load a saved Q‑table), you can start the server. The server exposes a `/guess` endpoint that returns the agent’s decision based on a given state (for example, `up` or `down`).
+After training (or if you load a saved Q‑table), you can start the server. The server exposes a `/q_table` endpoint that returns the agent’s `Q-table`
 
 ```bash
 cargo run --bin server
@@ -81,24 +81,5 @@ cargo run --bin server
 Access the server by opening your browser or using a tool like `curl`:
 
 ```bash
-curl "http://127.0.0.1:8080/guess?state=up"
+curl "http://127.0.0.1:8080/q_table"
 ```
-
-The server will return the agent’s guess as plain text.
-
-## Extending the Example
-
-This repository is intended as a starting point. Consider extending it by:
-- Experimenting with different RL algorithms.
-- Improving state representations.
-- Integrating more realistic environments.
-- Creating more endpoints for additional functionality.
-
-## References
-
-- [Reinforcement Learning: An Introduction](http://incompleteideas.net/book/the-book-2nd.html) by Sutton and Barto.
-- [Rust Actix‑web Documentation](https://actix.rs/)
-
-## License
-
-This project is for internal demonstration purposes only. Feel free to use or modify it as needed for learning and demonstration.
