@@ -1,4 +1,4 @@
-use std::io::{BufRead, Write, BufReader};
+use std::{io::{BufRead, BufReader, Write}, vec};
 use rand::Rng;
 
 use crate::environment::Action;
@@ -7,7 +7,7 @@ use crate::environment::Action;
 /// It contains methods for learning and acting with the environment and useful utils such as loading and saving Q-tables.
 pub struct Agent {
     /// Q-table is a 3D array where containing the Q-values for each state-action pair.
-    pub q_table: [[[f32; 4]; 5]; 5],
+    pub q_table: Vec<Vec<Vec<f32>>>,
     /// Epsilon-greedy parameters for exploration vs exploitation ε where (0 ≤ ε ≤ 1)
     /// A higher epsilon means more exploration, while a lower epsilon means more exploitation.
     epsilon: f32,
@@ -20,11 +20,11 @@ pub struct Agent {
 }
 impl Agent {
     /// Creates a new Agent with an initialized Q-table and parameters for learning.
-    pub fn new() -> Self {
+    pub fn new(rows: usize, cols: usize) -> Self {
         Agent { 
             // Q-table initialized with zeros
-            q_table: [[[0.; 4]; 5]; 5],
-            epsilon: 0.2,
+            q_table: vec![vec![vec![0.0; 4]; cols]; rows],
+            epsilon: 0.05,
             alpha: 0.1,
             gamma: 0.9
         }
@@ -92,11 +92,11 @@ impl Agent {
     }
 
     /// Loads a Q-table from a CSV file.
-    pub fn load(path: &str) -> Result<Self, std::io::Error> {
+    pub fn load(path: &str, rows: usize, cols: usize) -> Result<Self, std::io::Error> {
         let file = std::fs::File::open(path)?;
         let reader = BufReader::new(file);
         let mut agent = Agent {
-            q_table: [[[0.; 4]; 5]; 5],
+            q_table: vec![vec![vec![0.0; 4]; cols]; rows],
             epsilon: 0.2,
             alpha: 0.1,
             gamma: 0.9
@@ -107,7 +107,7 @@ impl Agent {
                 let values: Vec<f32> = line.split(',')
                     .map(|s| s.trim().parse().unwrap_or(0.0))
                     .collect();
-                agent.q_table[(i - 1)/ 5][(i - 1) % 5] = [values[0], values[1], values[2], values[3]];
+                agent.q_table[(i - 1)/ rows][(i - 1) % rows] = vec![values[0], values[1], values[2], values[3]];
         }
         });
         Ok(agent)
@@ -142,10 +142,10 @@ impl Agent {
 
     /// Converts the Q-table to a 2D grid of actions, where each cell contains the action with the highest Q-value.
     /// This is useful for visualizing the agent's Q-table in a more human-readable format.
-    pub fn q_table_to_2_dim_grid(&self) -> [[Action; 5]; 5] {
-        let mut grid = [[Action::Down; 5]; 5];
-        for i in 0..5 {
-            for j in 0..5 {
+    pub fn q_table_to_2_dim_grid(&self) -> Vec<Vec<Action>> {
+        let mut grid = vec![vec![Action::Up; self.q_table[0].len()]; self.q_table.len()];
+        for i in 0..self.q_table.len() {
+            for j in 0..self.q_table[i].len() {
                 grid[i][j] = Action::from(self.q_table[i][j].iter().enumerate().max_by(|(_, a), (_, b)| a.total_cmp(b)).map(|(index, _)| index).unwrap() as i8);
 
             }

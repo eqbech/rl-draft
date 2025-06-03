@@ -1,10 +1,6 @@
 use serde::{Deserialize, Serialize};
 use rand::{rng, seq::IndexedRandom, Rng};
 
-/// The OPTIONS array contains the possible starting positions for the agent in the environment.
-/// We exclude 2 as we dont to have the possibility of starting in the center of the grid. e.g. winning immediately.
-const OPTIONS: [usize; 4] = [0, 1, 3, 4];
-
 /// The GameState enum represents the current state of the game.
 pub enum GameState {
     /// Represents the game is in progress.
@@ -49,24 +45,26 @@ impl Action {
 /// It contains the current position of the agent, the board state which is a `5x5` grid, the reward for the last action, and the current game state.
 pub struct Environment {
     pub position: (usize, usize),
-    pub board: [[f32; 5]; 5],
+    pub board: Vec<Vec<f32>>,
+    // pub walls: Vec<(usize, usize)>,
     pub reward: f32,
     pub game_state: GameState
 }
 
 impl Environment {
     /// Creates a new Environment with an initial position, empty board, and default values for reward and game state.
-    pub fn new() -> Self {
+    pub fn new(rows: usize, cols: usize) -> Self {
         Environment {
             position: (0, 0),
-            board: [[0.; 5]; 5],
+            board: vec![vec![0.0; cols]; rows], // Initialize a 5x5 grid
             reward: 0.0,
             game_state: GameState::Started,
         }
     }
     /// Resets the environment and sets a new random starting position so that our agent does not always start in the top-left corner.
     pub fn reset(&mut self) {
-        self.position = (OPTIONS.choose(&mut rng()).unwrap().clone(), OPTIONS.choose(&mut rng()).unwrap().clone());
+        let possible_options: Vec<usize> = (0..self.board.len()).filter(|x| *x != self.board.len() / 2).collect();
+        self.position = (possible_options.choose(&mut rng()).unwrap().clone(), possible_options.choose(&mut rng()).unwrap().clone());
         self.reward = 0.0;
         self.game_state = GameState::Started;
     }
@@ -80,16 +78,16 @@ impl Environment {
                     self.position.0 -= 1;
                     self.calc_reward();
                 } else {
-                    self.reward = -1.0;
+                    self.calc_reward();
                     self.game_state = GameState::Finished;
                 }
             },
             Action::Down => {
-                if self.position.0 < 4 {
+                if self.position.0 < self.board[0].len() - 1 {
                     self.position.0 += 1;
                     self.calc_reward();
                 } else {
-                    self.reward = -1.0;
+                    self.calc_reward();
                     self.game_state = GameState::Finished;
                 }
             },
@@ -98,16 +96,16 @@ impl Environment {
                     self.position.1 -= 1;
                     self.calc_reward();
                 } else {
-                    self.reward = -1.0;
+                    self.calc_reward();
                     self.game_state = GameState::Finished;
                 }
             },
             Action::Right => {
-                if self.position.1 < 4 {
+                if self.position.1 < self.board.len() - 1 {
                     self.position.1 += 1;
                     self.calc_reward();
                 } else {
-                    self.reward = -1.0;
+                    self.calc_reward();
                     self.game_state = GameState::Finished;
                 }
             },
@@ -115,11 +113,12 @@ impl Environment {
     }
     /// Calculates the reward based on the agent's current position.
     fn calc_reward(&mut self) {
-        if self.position == (2, 2) {
-            self.reward = 10.0; // Reward for reaching the center
+        if self.position == (self.board.len() / 2, self.board[0].len() / 2) {
+            self.reward = 100.0; // Reward for reaching the center
             self.game_state = GameState::Finished;
         } else {
-            self.reward = 0.0; // Penalty for wrong guesses
+            // Euclidian distance: sqrt((x - center_x)^2 + (y - center_y)^2)
+            self.reward = 1. / f32::sqrt((self.position.0 as f32 - (self.board.len() / 2) as f32).powi(2) + (self.position.1 as f32 - (self.board[0].len() / 2) as f32).powi(2));
         }
     }
 }

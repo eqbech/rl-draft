@@ -1,7 +1,7 @@
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use std::sync::Mutex;
 use actix_cors::Cors;
-use rust_rl::agent::Agent;
+use rust_rl::{agent::Agent, GRID_SIZE};
 
 
 
@@ -22,11 +22,8 @@ async fn get_q_table(data: web::Data<Mutex<Agent>>) -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Train the agent or load a saved Q-table.
-    let agent = Agent::load("data/q_table.csv").expect("Failed to load Agent with Q-table");
+    let agent = Agent::load("data/q_table.csv", GRID_SIZE.0, GRID_SIZE.1).expect("Failed to load Agent with Q-table");
     println!("Agent loaded with Q-table.");
-    for t in agent.q_table.iter() {
-        println!("{:?}", t);
-    }
 
     // Wrap the agent in a Mutex and web::Data to share state safely.
     let agent_data = web::Data::new(Mutex::new(agent));
