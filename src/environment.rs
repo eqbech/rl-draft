@@ -112,12 +112,14 @@ impl Environment {
         }
     }
     /// Calculates the reward based on the agent's current position.
+    /// If the agent reaches the center of the board, it receives a reward of 100.0 and the game ends.
+    /// Otherwise, it calculates the reward based on the Euclidean distance from the center of the board.
+    /// Using the formula `r = 1 / √(x2 – x1)^2 + (y2 – y1)^2`
     fn calc_reward(&mut self) {
         if self.position == (self.board.len() / 2, self.board[0].len() / 2) {
-            self.reward = 100.0; // Reward for reaching the center
+            self.reward = 100.0;
             self.game_state = GameState::Finished;
         } else {
-            // Euclidian distance: sqrt((x - center_x)^2 + (y - center_y)^2)
             self.reward = 1. / f32::sqrt((self.position.0 as f32 - (self.board.len() / 2) as f32).powi(2) + (self.position.1 as f32 - (self.board[0].len() / 2) as f32).powi(2));
         }
     }
