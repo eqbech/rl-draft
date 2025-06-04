@@ -65,7 +65,7 @@ cargo build --release
 You can train the agent by running the training binary. This will run the training loop for a specified number of episodes and save the resulting Q‑table as a CSV file.
 
 ```bash
-cargo run --bin train
+cargo run --bin train --release
 ```
 
 After training, the Q‑table is saved to a CSV file (e.g., `data/q_table.csv`) and printed on the terminal.
@@ -75,7 +75,7 @@ After training, the Q‑table is saved to a CSV file (e.g., `data/q_table.csv`) 
 After training (or if you load a saved Q‑table), you can start the server. The server exposes a `/q_table` endpoint that returns the agent’s `Q-table`
 
 ```bash
-cargo run --bin server
+cargo run --bin server --release
 ```
 
 Access the server by opening your browser or using a tool like `curl`:
