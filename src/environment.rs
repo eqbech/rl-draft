@@ -64,7 +64,7 @@ impl Environment {
     /// Resets the environment and sets a new random starting position so that our agent does not always start in the top-left corner.
     pub fn reset(&mut self) {
         let possible_options: Vec<usize> = (0..self.board.len()).filter(|x| *x != self.board.len() / 2).collect();
-        self.position = (possible_options.choose(&mut rng()).unwrap().clone(), possible_options.choose(&mut rng()).unwrap().clone());
+        self.position = (*possible_options.choose(&mut rng()).unwrap(), *possible_options.choose(&mut rng()).unwrap());
         self.reward = 0.0;
         self.game_state = GameState::Started;
     }
