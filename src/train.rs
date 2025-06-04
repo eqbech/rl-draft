@@ -2,11 +2,11 @@ use std::fmt::Write;
 
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 
-use crate::{agent::Agent, environment::Environment};
+use crate::{agents::q_agent::QAgent, environment::Environment, Agent};
 
 /// The Trainer struct is responsible for managing the training process of the agent in the environment.
 pub struct Trainer {
-    pub agent: Agent,
+    pub agent: QAgent,
     pub environment: Environment,
 }
 
@@ -17,7 +17,7 @@ impl Trainer {
             panic!("Rows and columns must be odd numbers for the environment.");
         }
         Trainer {
-            agent: Agent::new(rows, cols),
+            agent: QAgent::new(rows, cols),
             environment: Environment::new(rows, cols),
         }
     }
@@ -25,10 +25,17 @@ impl Trainer {
     /// Each episode consists of the agent taking actions in the environment until a terminal state is reached. e.g. the agent either won or lost.
     pub fn train(&mut self, episodes: u64) {
         let pb = ProgressBar::new(episodes);
-        pb.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{bar:80.cyan/blue}] {pos}/{len} ({eta})")
-        .unwrap()
-        .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
-        .progress_chars("#>-"));
+        pb.set_style(
+            ProgressStyle::with_template(
+                "{spinner:.green} [{elapsed_precise}] [{bar:80.cyan/blue}] {pos}/{len} ({eta})",
+            )
+            .unwrap()
+            .with_key("eta", |state: &ProgressState, w: &mut dyn Write| {
+                write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap()
+            })
+            .progress_chars("#>-"),
+        );
+
         for episode in 1..=episodes {
             self.environment.reset();
             let mut state = self.environment.position;

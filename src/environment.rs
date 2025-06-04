@@ -1,5 +1,6 @@
-use serde::{Deserialize, Serialize};
-use rand::{rng, seq::IndexedRandom, Rng};
+use rand::{rng, seq::IndexedRandom};
+
+use crate::Action;
 
 /// The GameState enum represents the current state of the game.
 pub enum GameState {
@@ -7,38 +8,6 @@ pub enum GameState {
     Started,
     /// Represents the game has ended, either by reaching a goal or failing.
     Finished,
-}
-/// The Action enum represents the possible actions the agent can take in the environment.
-#[derive(Debug, Copy, Clone, Deserialize, Serialize)]
-pub enum Action {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-impl Action {
-    /// Returns a random action from the available actions.
-    /// This is useful for exploration in reinforcement learning.
-    pub fn get_random_state() -> Self {
-        let mut rng = rand::rng();
-        match rng.random_range(0..4) {
-            0 => Action::Up,
-            1 => Action::Down,
-            2 => Action::Left,
-            _ => Action::Right,
-        }
-    }
-    /// Converts an integer action to an Action enum.
-    pub fn from(action: i8) -> Self {
-        match action {
-            0 => Action::Up,
-            1 => Action::Down,
-            2 => Action::Left,
-            3 => Action::Right,
-            _ => panic!("Invalid action"),
-        }
-    }
 }
 
 /// The Environment struct represents the environment in which the agent operates.
@@ -48,7 +17,7 @@ pub struct Environment {
     pub board: Vec<Vec<f32>>,
     // pub walls: Vec<(usize, usize)>,
     pub reward: f32,
-    pub game_state: GameState
+    pub game_state: GameState,
 }
 
 impl Environment {
@@ -63,8 +32,13 @@ impl Environment {
     }
     /// Resets the environment and sets a new random starting position so that our agent does not always start in the top-left corner.
     pub fn reset(&mut self) {
-        let possible_options: Vec<usize> = (0..self.board.len()).filter(|x| *x != self.board.len() / 2).collect();
-        self.position = (*possible_options.choose(&mut rng()).unwrap(), *possible_options.choose(&mut rng()).unwrap());
+        let possible_options: Vec<usize> = (0..self.board.len())
+            .filter(|x| *x != self.board.len() / 2)
+            .collect();
+        self.position = (
+            *possible_options.choose(&mut rng()).unwrap(),
+            *possible_options.choose(&mut rng()).unwrap(),
+        );
         self.reward = 0.0;
         self.game_state = GameState::Started;
     }
@@ -81,7 +55,7 @@ impl Environment {
                     self.calc_reward();
                     self.game_state = GameState::Finished;
                 }
-            },
+            }
             Action::Down => {
                 if self.position.0 < self.board[0].len() - 1 {
                     self.position.0 += 1;
@@ -90,7 +64,7 @@ impl Environment {
                     self.calc_reward();
                     self.game_state = GameState::Finished;
                 }
-            },
+            }
             Action::Left => {
                 if self.position.1 > 0 {
                     self.position.1 -= 1;
@@ -99,7 +73,7 @@ impl Environment {
                     self.calc_reward();
                     self.game_state = GameState::Finished;
                 }
-            },
+            }
             Action::Right => {
                 if self.position.1 < self.board.len() - 1 {
                     self.position.1 += 1;
@@ -108,7 +82,7 @@ impl Environment {
                     self.calc_reward();
                     self.game_state = GameState::Finished;
                 }
-            },
+            }
         }
     }
     /// Calculates the reward based on the agent's current position.
@@ -120,7 +94,11 @@ impl Environment {
             self.reward = 100.0;
             self.game_state = GameState::Finished;
         } else {
-            self.reward = 1. / f32::sqrt((self.position.0 as f32 - (self.board.len() / 2) as f32).powi(2) + (self.position.1 as f32 - (self.board[0].len() / 2) as f32).powi(2));
+            self.reward = 1.
+                / f32::sqrt(
+                    (self.position.0 as f32 - (self.board.len() / 2) as f32).powi(2)
+                        + (self.position.1 as f32 - (self.board[0].len() / 2) as f32).powi(2),
+                );
         }
     }
 }
