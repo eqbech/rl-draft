@@ -5,7 +5,7 @@ This repository is a simple demonstration of reinforcement learning using Q‑le
 ## Overview
 
 - **Environment**  
-  The environment is modeled as a **5×5 grid**.  
+  The environment is modeled as a **N×M grid**.  
   - **Agent Positioning:** The agent’s state is its current position on the grid, defined as a tuple `(row, column)`.  
   - **Movement Rules:**  
     - The agent can move one step at a time in one of four directions: Up, Down, Left, or Right.  
