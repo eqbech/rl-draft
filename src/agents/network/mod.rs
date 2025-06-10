@@ -1,1 +1,1 @@
-pub mod dnn;
+pub mod nn;
